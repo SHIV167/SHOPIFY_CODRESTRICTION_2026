@@ -1,0 +1,68 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Shop {
+  id            String      @id @default(cuid())
+  shopifyDomain String      @unique
+  accessToken   String      @db.Text
+  isActive      Boolean     @default(true)
+  installedAt   DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  codSettings   CodSettings?
+
+  @@index([shopifyDomain])
+}
+
+model CodSettings {
+  id                         String   @id @default(cuid())
+  shopId                     String   @unique
+  shop                       Shop     @relation(fields: [shopId], references: [id], onDelete: Cascade)
+
+  enabled                    Boolean  @default(false)
+
+  blockedProductSkus          String[]
+  blockedProductIds          String[]
+
+  blockedCustomerEmails       String[]
+  blockedCustomerIds          String[]
+
+  maxCodOrderAmount           Int?
+  minSuccessfulPrepaidOrders  Int?
+  maxCodOrdersPerCustomer     Int?
+
+  allowedPincodes             String[]
+  blockedPincodes             String[]
+
+  messageProductBlock         String   @default("COD Not Available")
+  messageCustomerBlock        String   @default("COD Not Available")
+  messageOrderAmountLimit     String   @default("COD Available Only")
+  messagePincodeBlock         String   @default("COD Not Available")
+  messageGeneric              String   @default("Please Make Prepaid Payment")
+
+  cancelReason                String   @default("customer")
+  tagOnCancel                 String?
+
+  createdAt                  DateTime @default(now())
+  updatedAt                  DateTime @updatedAt
+}
+
+model CodDecisionLog {
+  id            String   @id @default(cuid())
+  shopDomain    String
+  orderId       String
+  orderName     String?
+  isCod         Boolean
+  allowed       Boolean
+  reasons       String[]
+  createdAt     DateTime @default(now())
+
+  @@index([shopDomain, createdAt])
+  @@index([orderId])
+}
