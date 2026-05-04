@@ -1,3 +1,6 @@
+// Unified Schema - Shared by COD Restrictions, Store Locator, and Review apps
+// All three apps use the same PostgreSQL database
+
 generator client {
   provider = "prisma-client-js"
 }
@@ -7,18 +10,40 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model Shop {
-  id            String      @id @default(cuid())
-  shopifyDomain String      @unique
-  accessToken   String      @db.Text
-  isActive      Boolean     @default(true)
-  installedAt   DateTime    @default(now())
-  updatedAt     DateTime    @updatedAt
+// ============================================================================
+// SHARED: Store installations (used by all 3 apps)
+// ============================================================================
 
+model Shop {
+  id            String    @id @default(cuid())
+  shopifyDomain String    @unique
+  accessToken   String    @db.Text
+  email         String?
+  name          String?
+  plan          String?
+  isActive      Boolean   @default(true)
+  installedAt   DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  // COD Restrictions relations
   codSettings   CodSettings?
 
+  // Store Locator relations
+  locations     StoreLocation[]
+
+  // Review App relations
+  reviews       Review[]
+  settings      ShopSettings?
+  metrics       ReviewMetrics?
+  requests      ReviewRequest[]
+
   @@index([shopifyDomain])
+  @@index([isActive])
 }
+
+// ============================================================================
+// COD RESTRICTIONS APP MODELS
+// ============================================================================
 
 model CodSettings {
   id                         String   @id @default(cuid())
@@ -65,4 +90,314 @@ model CodDecisionLog {
 
   @@index([shopDomain, createdAt])
   @@index([orderId])
+}
+
+// ============================================================================
+// STORE LOCATOR APP MODELS
+// ============================================================================
+
+model StoreLocation {
+  id          String   @id @default(cuid())
+  shopId      String
+  shop        Shop     @relation(fields: [shopId], references: [id], onDelete: Cascade)
+
+  name        String
+  imageUrl    String?
+  address     String
+  phone       String?
+  mapUrl      String?
+  latitude    String?
+  longitude   String?
+
+  isActive    Boolean  @default(true)
+  sortOrder   Int      @default(0)
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([shopId, isActive, sortOrder])
+}
+
+// ============================================================================
+// REVIEW APP MODELS
+// ============================================================================
+
+model ShopSettings {
+  id                    String   @id @default(cuid())
+  shopId                String   @unique
+  shop                  Shop     @relation(fields: [shopId], references: [id], onDelete: Cascade)
+
+  // Widget settings
+  widgetPosition        String   @default("below_description")
+  widgetTheme           String   @default("default")
+  starColor             String   @default("#fbbf24")
+  textColor             String   @default("#1f2937")
+  backgroundColor       String   @default("#ffffff")
+
+  // Review settings
+  autoApprove           Boolean  @default(false)
+  requirePhotos         Boolean  @default(false)
+  minReviewLength       Int      @default(20)
+  maxPhotos             Int      @default(5)
+  maxPhotoSizeMB        Int      @default(5)
+  enableHelpful         Boolean  @default(true)
+  enableComments        Boolean  @default(false)
+
+  // Email settings
+  autoRequestEnabled    Boolean  @default(true)
+  requestDelayDays      Int      @default(7)
+  emailSubject          String   @default("How was your recent purchase from {shop_name}?")
+  emailTemplate         String?  @db.Text
+  senderName            String   @default("{shop_name}")
+  senderEmail           String?
+
+  // Coupon incentive
+  couponEnabled         Boolean  @default(false)
+  couponCode            String?
+  couponDiscount        String?
+  couponType            String?  @default("percentage")
+  couponMinPhotos       Int      @default(1)
+
+  // SEO settings
+  showRichSnippets      Boolean  @default(true)
+  aggregateRating       Boolean  @default(true)
+  enableJsonLd          Boolean  @default(true)
+
+  // Display settings
+  reviewsPerPage        Int      @default(10)
+  showFeaturedFirst     Boolean  @default(true)
+  showVerifiedBadge     Boolean  @default(true)
+  showRecommendBadge    Boolean  @default(true)
+  showResponseDate      Boolean  @default(true)
+
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+}
+
+model Review {
+  id              String    @id @default(cuid())
+  shopId          String
+  shop            Shop      @relation(fields: [shopId], references: [id], onDelete: Cascade)
+
+  // Product reference
+  productId       String
+  productHandle   String
+  productTitle    String
+  variantId       String?
+  variantTitle    String?
+
+  // Customer info
+  customerId      String?
+  customerName    String
+  customerEmail   String
+  customerPhone   String?
+  isVerified      Boolean   @default(false)
+
+  // Review content
+  rating          Int
+  title           String?
+  content         String    @db.Text
+  recommend       Boolean   @default(true)
+
+  // Photos
+  photos          Photo[]
+
+  // Status & moderation
+  status          String    @default("pending")
+  featured        Boolean   @default(false)
+  featuredAt      DateTime?
+  rejectedReason  String?
+
+  // Engagement
+  helpfulCount    Int       @default(0)
+  notHelpfulCount Int       @default(0)
+  viewCount       Int       @default(0)
+
+  // Admin response
+  adminResponse   String?   @db.Text
+  respondedBy     String?
+  respondedAt     DateTime?
+
+  // Metadata
+  ipAddress       String?
+  userAgent       String?
+  referrer        String?
+  source          String    @default("widget")
+
+  // Coupon tracking
+  couponCode      String?
+  couponSentAt    DateTime?
+
+  // Timestamps
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  publishedAt     DateTime?
+
+  @@index([shopId, productId, status])
+  @@index([shopId, status, createdAt])
+  @@index([shopId, customerEmail])
+  @@index([productId, status])
+  @@index([createdAt])
+  @@index([featured, featuredAt])
+}
+
+model Photo {
+  id            String   @id @default(cuid())
+  reviewId      String
+  review        Review   @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+
+  url           String
+  thumbnailUrl  String?
+  mediumUrl     String?
+
+  filename      String
+  originalName  String
+  size          Int
+  mimeType      String
+  width         Int?
+  height        Int?
+
+  bucket        String?
+  key           String?
+
+  createdAt     DateTime @default(now())
+
+  @@index([reviewId])
+}
+
+model ReviewRequest {
+  id            String    @id @default(cuid())
+  shopId        String
+  shop          Shop      @relation(fields: [shopId], references: [id], onDelete: Cascade)
+
+  orderId       String
+  orderNumber   String?
+
+  productId     String
+  productTitle  String?
+
+  customerId    String?
+  customerEmail String
+  customerName  String?
+
+  status        String    @default("scheduled")
+
+  sentAt        DateTime?
+  openedAt      DateTime?
+  clickedAt     DateTime?
+  submittedAt   DateTime?
+  bounceReason  String?
+
+  scheduledFor  DateTime
+  sentCount     Int       @default(0)
+  maxSends      Int       @default(1)
+
+  isReminder    Boolean   @default(false)
+  reminderOfId  String?
+
+  createdAt     DateTime  @default(now())
+
+  @@index([shopId, status, scheduledFor])
+  @@index([shopId, productId])
+  @@index([customerEmail, status])
+}
+
+model ReviewVote {
+  id          String   @id @default(cuid())
+  reviewId    String
+  isHelpful   Boolean
+
+  customerId  String?
+  ipAddress   String?
+  sessionId   String?
+
+  createdAt   DateTime @default(now())
+
+  @@unique([reviewId, customerId, ipAddress, sessionId])
+}
+
+model ReviewMetrics {
+  id              String   @id @default(cuid())
+  shopId          String   @unique
+  shop            Shop     @relation(fields: [shopId], references: [id], onDelete: Cascade)
+
+  totalReviews    Int      @default(0)
+  approvedReviews Int      @default(0)
+  pendingReviews  Int      @default(0)
+  rejectedReviews Int      @default(0)
+  featuredReviews Int      @default(0)
+  photoReviews    Int      @default(0)
+  verifiedReviews Int      @default(0)
+
+  avgRating       Float    @default(0)
+  fiveStarCount   Int      @default(0)
+  fourStarCount   Int      @default(0)
+  threeStarCount  Int      @default(0)
+  twoStarCount    Int      @default(0)
+  oneStarCount    Int      @default(0)
+
+  totalHelpfulVotes   Int   @default(0)
+  totalPhotoViews     Int   @default(0)
+  totalReviewViews    Int   @default(0)
+
+  requestsSent        Int   @default(0)
+  requestsOpened      Int   @default(0)
+  requestsClicked     Int   @default(0)
+  requestsConverted   Int   @default(0)
+  conversionRate      Float @default(0)
+
+  estimatedRevenue    Float?  @default(0)
+
+  date              DateTime @default(now())
+
+  @@index([shopId, date])
+}
+
+model ProductMetrics {
+  id            String   @id @default(cuid())
+  shopId        String
+  productId     String
+  productHandle String?
+
+  reviewCount   Int      @default(0)
+  avgRating     Float    @default(0)
+  photoCount    Int      @default(0)
+
+  updatedAt     DateTime @updatedAt
+
+  @@unique([shopId, productId])
+  @@index([shopId, avgRating])
+}
+
+// ============================================================================
+// SHARED: Webhook & Activity logging (used by all apps)
+// ============================================================================
+
+model WebhookLog {
+  id          String   @id @default(cuid())
+  shopId      String
+  shopDomain  String?
+  topic       String
+  payload     Json
+  processed   Boolean  @default(false)
+  error       String?
+  createdAt   DateTime @default(now())
+
+  @@index([shopId, topic, createdAt])
+  @@index([shopDomain, topic, createdAt])
+}
+
+model ActivityLog {
+  id          String   @id @default(cuid())
+  shopId      String
+  adminEmail  String
+  action      String
+  entityType  String
+  entityId    String
+  details     Json?
+  ipAddress   String?
+  createdAt   DateTime @default(now())
+
+  @@index([shopId, createdAt])
+  @@index([adminEmail, createdAt])
 }
