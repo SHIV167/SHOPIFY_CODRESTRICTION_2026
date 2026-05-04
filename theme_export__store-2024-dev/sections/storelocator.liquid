@@ -1,0 +1,206 @@
+{% schema %}
+{
+  "name": "Store Locators",
+  "settings": [
+    {
+      "type": "text",
+      "id": "title",
+      "label": "Section Title",
+      "default": "Our Stores"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "store",
+      "name": "Store",
+      "settings": [
+        {
+          "type": "text",
+          "id": "store_name",
+          "label": "Store Name",
+          "default": "Store Name"
+        },
+        {
+          "type": "image_picker",
+          "id": "store_image",
+          "label": "Store Image"
+        },
+        {
+          "type": "text",
+          "id": "address",
+          "label": "Address",
+          "default": "123 Main St, City, State, ZIP"
+        },
+        {
+          "type": "text",
+          "id": "phone",
+          "label": "Phone",
+          "default": "(123) 456-7890"
+        },
+        {
+          "type": "url",
+          "id": "map_url",
+          "label": "Google Maps URL"
+        },
+        {
+          "type": "text",
+          "id": "latitude",
+          "label": "Latitude",
+          "info": "Latitude coordinate for directions"
+        },
+        {
+          "type": "text",
+          "id": "longitude",
+          "label": "Longitude",
+          "info": "Longitude coordinate for directions"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Store Locators",
+      "blocks": [
+        {
+          "type": "store"
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}
+
+<div class="store-locator-section">
+  <h2 class="section-title">{{ section.settings.title }}</h2>
+  <div class="store-locator-grid">
+    {% for block in section.blocks %}
+      {% if block.type == 'store' %}
+        <div class="store-card">
+          {% if block.settings.store_image %}
+            <div class="store-image">
+              {{
+                block.settings.store_image
+                | image_url: width: 300
+                | image_tag: loading: 'lazy', alt: block.settings.store_name
+              }}
+            </div>
+          {% endif %}
+          <div class="store-info">
+            <h3>{{ block.settings.store_name }}</h3>
+            <p>{{ block.settings.address }}</p>
+            <p>{{ block.settings.phone }}</p>
+            <div class="store-actions">
+              {% if block.settings.map_url != blank %}
+                <a href="{{ block.settings.map_url }}" class="action-button" target="_blank" rel="noopener noreferrer"
+                  >View on Map</a
+                >
+              {% endif %}
+              {% if block.settings.latitude != blank and block.settings.longitude != blank %}
+                <a
+                  href="https://www.google.com/maps/dir/?api=1&destination={{ block.settings.latitude }},{{ block.settings.longitude }}"
+                  class="action-button"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  >Get Directions</a
+                >
+              {% endif %}
+            </div>
+          </div>
+        </div>
+      {% endif %}
+    {% endfor %}
+  </div>
+</div>
+
+<style>
+  .store-locator-section {
+    padding: 2rem 0;
+  }
+
+  .section-title {
+    text-align: center;
+    margin-bottom: 2rem;
+  }
+
+  .store-locator-grid {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 1.5rem;
+  }
+
+  .store-card {
+    background-color: #ffffff;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    overflow: hidden;
+    width: calc(33.33% - 1rem);
+    min-width: 280px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+  }
+
+  .store-image {
+    width: 100%;
+    height: auto;
+    overflow: hidden;
+  }
+
+  .store-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .store-info {
+    padding: 1rem;
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .store-info h3 {
+    margin-top: 0;
+  }
+
+  .store-actions {
+    display: flex;
+    justify-content: space-between;
+    margin-top: auto;
+    gap: 0.5rem;
+  }
+
+  .action-button {
+    display: inline-block;
+    padding: 0.5rem 1rem;
+    background-color: #4CAF50;
+    color: white;
+    text-decoration: none;
+    border-radius: 4px;
+    font-size: 0.9rem;
+    transition: background-color 0.3s ease;
+    text-align: center;
+    flex: 1;
+  }
+
+  .action-button:hover {
+    background-color: #45a049;
+  }
+
+  @media (max-width: 768px) {
+    .store-card {
+      width: calc(50% - 0.75rem);
+    }
+  }
+
+  @media (max-width: 480px) {
+    .store-card {
+      width: 100%;
+    }
+
+    .store-actions {
+      flex-direction: column;
+    }
+  }
+</style>

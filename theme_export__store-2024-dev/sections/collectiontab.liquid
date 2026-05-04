@@ -1,0 +1,416 @@
+<section class="collection_tabs">
+  <div class="page-width">
+    <div class="section-heading text-center">
+      {% if section.settings.heading != blank %}
+        <h2>{{ section.settings.heading }}</h2>
+      {% endif %}
+      {% if section.settings.subheading != blank %}
+        <p>{{ section.settings.subheading }}</p>
+      {% endif %}
+    </div>
+    <div class="tabs">
+      <ul id="tabs-nav">
+        {% for block in section.blocks %}
+          {% if block.settings.collection_name != blank %}
+            <li>
+              <a href="#tab{{ forloop.index }}">{{ block.settings.collection_name }}</a>
+            </li>
+          {% endif %}
+        {% endfor %}
+      </ul>
+      <div id="tabs-content">
+        {% for block in section.blocks %}
+          <div id="tab{{ forloop.index }}" class="tab-content">
+            {%- assign collection = collections[block.settings.collection] -%}
+            <div class="collection_sec">
+              <div class="grid-collection">
+                {% for product in collection.products limit: 4 %}
+                  <div class="grid-product">
+                    <a class="product_img_link" href="{{ product.url }}">
+                      <div class="reveal">
+                        {% if product.compare_at_price > product.price and settings.promotion_tag %}
+                          <div class="product_discount" aria-hidden="true" accesskey>
+                            {% if settings.promo_text_or_pourc == '1' %}
+                              {{ settings.promo_text }}
+                            {% else %}
+                              {% if product.compare_at_price_max != product.compare_at_price_min %}
+                                {% assign compare_old_count = 0 %}
+                                {% assign compare_new_count = 0 %}
+                                {% for variant in product.variants %}
+                                  {% if variant.compare_at_price > variant.price %}
+                                    {% capture compare_new_count %}{{ variant.compare_at_price | minus: variant.price | times: 100.0 | divided_by: variant.compare_at_price| ceil }}{% endcapture %}
+                                    <script>
+                                      if({{compare_new_count}} > {{compare_old_count}}){ {% assign compare_old_count = compare_new_count %} }
+                                    </script>
+                                  {% endif %}
+                                {% endfor %}
+                                <span>{{ 'products.product.upto' | t }} -{{ compare_old_count | append: '%' }}</span>
+                              {% else %}
+                                <span
+                                  >-
+                                  {{-
+                                    product.compare_at_price
+                                    | minus: product.price
+                                    | times: 100.0
+                                    | divided_by: product.compare_at_price
+                                    | ceil
+                                  -}}
+                                  %</span
+                                >
+                              {% endif %}
+                            {% endif %}
+                          </div>
+                        {% endif %}
+                        {% if product.images.size > 1 %}
+                          <img
+                            data-swift-lazy="1"
+                            loading="lazy"
+                            class="product_img_new"
+                            lazy-src="{{ product.featured_image.src | img_url: '348x' }}"
+                          >
+                          <img
+                            data-swift-lazy="1"
+                            loading="lazy"
+                            class="product_img_new hidden"
+                            lazy-src="{{ product.images[1] | product_img_url: '348x' }}"
+                          >
+                        {% else %}
+                          <img
+                            data-swift-lazy="1"
+                            loading="lazy"
+                            src="{{ product.featured_image.src | img_url: '400x' }}"
+                            alt="{{ product.featured_image.alt | escape }}"
+                          >
+                        {% endif %}
+
+                        <div
+                          class="product_img"
+                          style="background-image: url('{{ product.featured_image.src | img_url: 'original' }}');"
+                        ></div>
+                        <div
+                          class="product_img hidden"
+                          style="background-image: url('{{ product.images[1] | product_img_url: 'original' }}');"
+                        ></div>
+                      </div>
+                    </a>
+                    <a class="product_title" href="{{ product.url }}">{{ product.title }}</a>
+                    {% if product.available %}
+                      <div class="product-card__price">
+                        {% if product.compare_at_price > product.price %}
+                          {% if product.price_varies %}
+                            {% assign sale_price = product.price | money %}
+                            <span class="product-card__promo-price">
+                              {{- 'products.product.on_sale_from_html' | t: price: sale_price -}}
+                            </span>
+                          {% else %}
+                            <span class="product-card__promo-price">{{ product.price | money }}</span>
+                            <s class="product-card__regular-price">{{ product.compare_at_price | money }}</s>
+                          {% endif %}
+                        {% else %}
+                          {% if product.price_varies %}
+                            {% assign price = product.price | money %}
+                            {{ 'products.product.from_text_html' | t: price: price }}
+                          {% else %}
+                            {{ product.price | money }}
+                          {% endif %}
+                        {% endif %}
+                        {%- unless product.price_varies -%}
+                          {%- if current_variant.unit_price_measurement -%}
+                            {% include 'product-unit-price',
+                              product_variant: current_variant,
+                              wrapper_class: 'product-card__unit-price'
+                            %}
+                          {%- endif -%}
+                        {%- endunless -%}
+                      </div>
+                    {% else %}
+                      <div class="product-card__availability">
+                        {{ 'products.product.sold_out' | t }}
+                      </div>
+                    {% endif %}
+
+                    {% if settings.app_reviews != '0' %}
+                      <div class="product_rating text-left"></div>
+                    {% endif %}
+                  </div>
+                {% endfor %}
+
+                <div class="btn_container text-center">
+                  <a href="{{block.settings.collection_url}}">{{ section.settings.button_label }}</a>
+                </div>
+              </div>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</section>
+{% schema %}
+ {
+   "name": "Featured Collection Tabs",
+   "settings": [
+       {
+         "type": "text",
+         "id": "heading",
+         "label": "Heading"
+       },
+	{
+         "type": "textarea",
+         "id": "subheading",
+         "label": "Sub Heading"
+       },
+	{
+         "type": "text",
+         "id": "button_label",
+         "label": "Button Label"
+       }
+],
+     "blocks":[
+      {
+       "type": "Collection",
+       "name": "Collection",
+       "settings": [
+             {
+               "type": "text",
+               "id": "collection_name",
+               "label": "Collection Name"
+             },
+             {
+               "id": "collection",
+               "type": "collection",
+               "label": "Select Collection"
+             },
+		  {
+               "type": "url",
+               "id": "collection_url",
+               "label": "Button Url"
+             }
+           ]
+         }
+     ],
+     "presets": [
+      {
+        "name": "Featured Collection Tabs",
+        "category": "Featured Collection Tabs"
+      }
+     ]
+ }
+{% endschema %}
+{% stylesheet %}
+    /**** collections tabs ****/
+  .collection_tabs {
+      padding: 2em 0;
+  }
+  .collection_tabs .page-width {
+      max-width: 1500px;
+  }
+  .collection_tabs .section-heading {
+      margin-bottom: 35px;
+  }
+  .collection_sec .grid-collection {
+      display: flex;
+      flex-wrap: wrap;
+  }
+  .collection_sec .grid-product {
+      width: 25%;
+      padding: 0 10px;
+  }
+  .collection_sec .product_img {
+      background-size: cover !important;
+      background-repeat: no-repeat ;
+      background-position: center;
+  }
+  .reveal {
+      position: relative;
+      overflow: hidden;
+  }
+  .reveal img {
+      display: block;
+  }
+  .reveal .hidden {
+      position: absolute;
+      z-index: 0!important;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: #fff;
+      opacity: 0;
+      -webkit-transition: opacity .6s ease-in-out;
+      -moz-transition: opacity .6s ease-in-out;
+      -o-transition: opacity .6s ease-in-out;
+      transition: opacity .6s ease-in-out;
+  }
+  .reveal:hover .hidden {
+      opacity: 1;
+  }
+  .reveal .product_discount{
+    transition: 0.6s all;
+  }
+  .reveal:hover .product_discount {
+      transform: translateX(-65px);
+  }
+  .collection_sec .grid-product .product_title {
+      color: #1b1b1b;
+      font-size: 16px;
+      margin: 10px 0 5px 0;
+      line-height: 26px;
+      font-weight: 500;
+      display: block;
+      text-align:center;
+  }
+  .collection_sec .grid-product .product_price {
+      color: #929292;
+      font-size: 16px;
+      margin-bottom: 5px;
+  }
+  .collection_sec .product_discount {
+      position: absolute;
+      min-width: 50px;
+      height: 30px;
+      padding: 0 6px;
+      background: #e4572e;
+      color: #fff;
+      font-size: 13px;
+      text-align: center;
+      letter-spacing: .05em;
+      line-height: 30px;
+      z-index: 2;
+  }
+
+  .collection_sec .product-card__price {
+      color: #929292;
+      text-align: center;
+      margin-bottom: 5px;
+  }
+
+  .collection_sec .product-card__promo-price {
+      font-weight: 400;
+  }
+  .collection_sec .btn_container {
+      margin: 30px auto 0 auto;
+  }
+
+  .collection_sec .btn_container a {
+      background: #e3572e;
+      color: #ffffff;
+      font-size: 16px;
+      line-height: 1;
+      text-transform: uppercase;
+      padding: 14px 30px;
+      display: block;
+  }
+  .collection_sec .btn_container a:hover {
+      background: #1b1b1b;
+  }
+  /* Tabs */
+
+  #tabs-nav {
+     text-align: center;
+     margin-bottom: 50px;
+  }
+  #tabs-nav li {
+    display: inline-block;
+      position: relative;
+      margin-bottom: 10px;
+  }
+  #tabs-nav li a {
+      background: #f1f1f1;
+      color: #1b1b1b;
+      margin: 0 5px;
+      font-size: 16px;
+      line-height: 1;
+      text-transform: uppercase;
+      padding: 14px 30px;
+      cursor: pointer;
+      position: relative;
+      border-radius: 3px;
+      display: block;
+      transition: 0.4s all;
+  }
+  #tabs-nav li a:hover{
+    background-color: #e3572e;
+      color: #fff;
+  }
+  #tabs-nav li.active a{
+    background-color: #e3572e;
+    color: #fff;
+  }
+  #tabs-nav li::before{
+      content: "";
+      width: 0;
+      height: 0;
+    border-color: transparent transparent transparent transparent;
+      border-width: 5px 5px 0 5px;
+      border-style: solid;
+      position: absolute;
+      bottom: -5px;
+      left: 50%;
+      margin-left: -5px;
+      transition: 0.4s all;
+
+  }
+  #tabs-nav li.active::before {
+      border-color: #e3572e transparent transparent transparent;
+  }
+  #tabs-nav li:hover::before {
+      border-color: #e3572e transparent transparent transparent;
+  }
+  @media only screen and (max-width: 1500px){
+  .hero_sec .container,.collection_tabs .page-width {
+      padding: 0 80px;
+  }
+  }
+  @media only screen and (max-width: 767px){
+  .collection_tabs .page-width {
+      padding: 0 15px;
+  }
+  /** collection tabs ***/
+  .collection_sec .grid-collection {
+    flex-wrap: unset;
+    scroll-snap-type: x mandatory;
+    overflow: auto;
+    display: grid;
+    grid-template-columns: repeat(4, 80%);
+  }
+  .collection_sec .grid-collection::-webkit-scrollbar,.blogs_main .blog_sec::-webkit-scrollbar {
+      display: none;
+  }
+  .collection_sec .grid-product {
+      min-width: 100%;
+      scroll-snap-align: start;
+  }
+  .collection_sec .btn_container {
+      position: sticky;
+      left: 50%;
+      transform: translateX(-50%);
+  }
+  .collection_sec .grid-product .product_title {
+      font-size: 14px;
+      line-height: 19px;
+
+  }
+  #tabs-nav li a {
+      font-size: 14px;
+  }
+  }
+{% endstylesheet %}
+
+{% javascript %}
+    // Show the first tab and hide the rest
+  $('#tabs-nav li:first-child').addClass('active');
+  $('.tab-content').hide();
+  $('.tab-content:first').show();
+
+  // Click function
+  $('#tabs-nav li').click(function(){
+    $('#tabs-nav li').removeClass('active');
+    $(this).addClass('active');
+    $('.tab-content').hide();
+
+    var activeTab = $(this).find('a').attr('href');
+    $(activeTab).fadeIn();
+    return false;
+  });
+{% endjavascript %}

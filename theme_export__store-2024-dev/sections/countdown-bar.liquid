@@ -1,0 +1,133 @@
+<div class="countdown-bar">
+  <div class="countdown-text">Hurry! Sale ends in:</div>
+  <div class="countdown-boxes">
+    <div class="countdown-box" id="days">
+      <span class="countdown-value">0</span>
+      <span class="countdown-label">Days</span>
+    </div>
+    <div class="countdown-box" id="hours">
+      <span class="countdown-value">0</span>
+      <span class="countdown-label">Hrs</span>
+    </div>
+    <div class="countdown-box" id="minutes">
+      <span class="countdown-value">0</span>
+      <span class="countdown-label">Mins</span>
+    </div>
+    <div class="countdown-box" id="seconds">
+      <span class="countdown-value">0</span>
+      <span class="countdown-label">Secs</span>
+    </div>
+  </div>
+</div>
+
+<script>
+  var endDate = new Date("Oct 31, 2024 23:59:59").getTime(); // Adjust this date accordingly
+
+  var countdownTimer = setInterval(function() {
+    var now = new Date().getTime();
+    var timeRemaining = endDate - now;
+
+    var days = Math.floor(timeRemaining / (1000 * 60 * 60 * 24));
+    var hours = Math.floor((timeRemaining % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+    var minutes = Math.floor((timeRemaining % (1000 * 60 * 60)) / (1000 * 60));
+    var seconds = Math.floor((timeRemaining % (1000 * 60)) / 1000);
+
+    // Update the countdown values in the respective elements
+    document.getElementById("days").querySelector(".countdown-value").innerHTML = days;
+    document.getElementById("hours").querySelector(".countdown-value").innerHTML = hours;
+    document.getElementById("minutes").querySelector(".countdown-value").innerHTML = minutes;
+    document.getElementById("seconds").querySelector(".countdown-value").innerHTML = seconds;
+
+    // If the countdown is over, display an expired message
+    if (timeRemaining < 0) {
+      clearInterval(countdownTimer);
+      document.getElementById("days").querySelector(".countdown-value").innerHTML = "0";
+      document.getElementById("hours").querySelector(".countdown-value").innerHTML = "0";
+      document.getElementById("minutes").querySelector(".countdown-value").innerHTML = "0";
+      document.getElementById("seconds").querySelector(".countdown-value").innerHTML = "0";
+    }
+  }, 1000);
+</script>
+
+<style>
+      .countdown-bar {
+        background-color: #ff9900; /* Adjust the background color */
+        color: #fff;
+        text-align: center;
+        padding: 20px 0;
+        font-size: 13px;
+        font-weight: bold;
+        position: relative;
+      }
+
+      .countdown-boxes {
+        display: flex;
+        justify-content: center;
+        margin-top: 10px;
+      }
+
+      .countdown-box {
+        background-color: #066425;
+        border-radius: 10px;
+        padding: 15px;
+        margin: 0 10px;
+        width: 80px; /* Adjust the width as needed */
+        animation: borderAnimation 2s infinite;
+        position: relative;
+      }
+
+      .countdown-value {
+        font-size: 15px;
+        font-weight: bold;
+        display: block;
+      }
+
+      .countdown-label {
+        font-size: 14px;
+        margin-top: 5px;
+      }
+
+      @keyframes borderAnimation {
+        0% {
+          border: 5px solid rgba(255, 255, 255, 0);
+        }
+        50% {
+          border: 5px solid rgba(255, 255, 255, 0.7);
+        }
+        100% {
+          border: 5px solid rgba(255, 255, 255, 0);
+        }
+      }
+
+      .countdown-box:hover {
+        background: radial-gradient(circle, rgba(255, 255, 255, 0.2) 0%, rgba(255, 255, 255, 0.5) 100%);
+        transition: background 0.3s ease;
+      }
+
+    .product-timer {
+    background: linear-gradient(to right, rgb(170, 75, 212) 5%, rgb(131, 16, 181) 25%, rgb(170, 75, 212) 35%) 0% 0% / 1000px 100%;
+    animation: 2s infinite mBlaze-strip; /* Apply the animation */
+    color: #fff; /* Text color for the timer */
+    padding: 5px 10px;
+    border-radius: 5px;
+    position: absolute; /* Adjust position as needed */
+    top: 10px; /* Adjust top position */
+    left: 10px; /* Adjust left position */
+    font-size: 14px;
+    font-weight: bold;
+    z-index: 10; /* Ensure it appears above other elements */
+     width: 210px;
+  }
+
+  @keyframes mBlaze-strip {
+    0% {
+      background-position: 0% 0%;
+    }
+     50% {
+      background-position: 50% 50%;
+    }
+    100% {
+      background-position: 100% 100%;
+    }
+  }
+</style>

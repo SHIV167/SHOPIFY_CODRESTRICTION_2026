@@ -1,0 +1,139 @@
+<div
+  class="celeb"
+  style=""
+>
+  <div class="section-header center head">
+    <p style="font-size: 5rem;font-family: poppins !important; color: #098c1f;" class="title">
+      <b>WHAT CELEBRITY </b> <span class="blid">SAYS</span>
+    </p>
+  </div>
+  <div class="video-text-section">
+    <div class="container-fluid">
+      <div class="row">
+        <!-- Left column: Text Description (col-md-6) -->
+        <div class="col-12 col-md-6 text-column">
+          <div class="text-wrapper">
+            <h2>{{ section.settings.heading }}</h2>
+            <p>{{ section.settings.description }}</p>
+          </div>
+        </div>
+
+        <!-- Right column: YouTube Video Thumbnail (col-md-6) -->
+        <div class="col-12 col-md-6 video-column">
+          <div class="video-wrapper" id="video-container">
+            <!-- Local Thumbnail image -->
+            {% if section.settings.thumbnail_image != blank %}
+              <img
+                id="video-thumbnail"
+                src="{{ section.settings.thumbnail_image | img_url: 'master' }}"
+                alt="Video Thumbnail"
+                style="width: 100%; cursor: pointer;"
+              >
+            {% else %}
+              <!-- Fallback to YouTube thumbnail if no image uploaded -->
+              <img
+                id="video-thumbnail"
+                src="https://img.youtube.com/vi/{{ section.settings.youtube_url | split: '?v=' | last }}/maxresdefault.jpg"
+                alt="Video Thumbnail"
+                style="width: 100%; cursor: pointer;"
+              >
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Section Settings -->
+{% schema %}
+{
+  "name": "Video and Text Section",
+  "settings": [
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "Your Heading Here"
+    },
+    {
+      "type": "textarea",
+      "id": "description",
+      "label": "Text Description",
+      "default": "Your description here."
+    },
+     {
+      "type": "image_picker",
+      "id": "video_play_btn",
+      "label": "Play Button image"
+    },
+       {
+      "type": "image_picker",
+      "id": "thumbnail_image",
+      "label": "Thumbnail Image",
+      "info": "Upload a local image to use as the video thumbnail. Leave blank to use the YouTube thumbnail."
+    },
+    {
+      "type": "text",
+      "id": "youtube_url",
+      "label": "YouTube Video URL",
+      "default": "dQw4w9WgXcQ"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Video and Text",
+      "category": "Custom"
+    }
+  ]
+}
+{% endschema %}
+
+<!-- Styles -->
+<style>
+    @media (min-width: 768px) {
+      .celeb {
+          padding: 10px 120px 60px;
+      }
+  }
+    .celeb{background: #dcfee4;
+      width: 100vw;
+      margin-left: calc(50% - 50vw);
+      margin-right: calc(50% - 50vw);
+      padding: 0px 12px 30px;}
+    .video-text-section {
+      padding: 40px 0;
+    }
+
+    .text-column {
+      padding: 20px;
+    }
+
+    .video-wrapper {
+      position: relative;
+    }
+
+    .video-column iframe {
+      width: 100%;
+      height: 400px; /* Adjust as needed */
+
+    }
+</style>
+
+<!-- JavaScript to handle click on thumbnail -->
+<script defer>
+  document.getElementById('video-thumbnail').addEventListener('click', function() {
+    var videoContainer = document.getElementById('video-container');
+    var iframe = document.createElement('iframe');
+    iframe.setAttribute('width', '100%');
+    iframe.setAttribute('height', '400px');
+    iframe.setAttribute('src', 'https://www.youtube.com/embed/_4_tW2ZhNZc?autoplay=1');
+    iframe.setAttribute('frameborder', '0');
+    iframe.setAttribute('allow', 'autoplay; encrypted-media');
+    iframe.setAttribute('allowfullscreen', true);
+
+    // Replace the thumbnail with the iframe
+    videoContainer.innerHTML = '';
+    videoContainer.appendChild(iframe);
+  });
+</script>

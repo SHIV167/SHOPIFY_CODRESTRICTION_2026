@@ -1,0 +1,20 @@
+{%- liquid
+  assign mr_product_id = product_id | default: product.id
+-%}
+
+<div class="modern-reviews" data-shop="{{ shop.permanent_domain }}" data-product-id="{{ mr_product_id }}"></div>
+
+{%- unless mr_widget_loaded -%}
+  <script>
+    window.__modernReviewsWidgetLoaded = window.__modernReviewsWidgetLoaded || false;
+  </script>
+  <script>
+    if (!window.__modernReviewsWidgetLoaded) {
+      window.__modernReviewsWidgetLoaded = true;
+      var s = document.createElement('script');
+      s.src = 'https://shopify-review-2026.onrender.com/widget.js';
+      s.defer = true;
+      document.head.appendChild(s);
+    }
+  </script>
+{%- endunless -%}

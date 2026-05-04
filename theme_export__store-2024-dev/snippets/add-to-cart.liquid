@@ -1,0 +1,51 @@
+<!-- Popup Cart -->
+<div id="popup-cart" class="popup-cart hidden">
+  <div class="popup-cart-content">
+    <button id="close-popup" class="close-popup">✖</button>
+    <h2>Your Cart</h2>
+    <div class="cart-items">
+      {% for item in cart.items %}
+        <div class="cart-item">
+          <img src="{{ item.image | img_url: 'small' }}" alt="{{ item.title }}">
+          <div class="cart-item-details">
+            <h3>{{ item.title }}</h3>
+            <div class="quantity-selector">
+              <label for="quantity-{{item.id}}">Quantity:</label>
+              <input
+                type="number"
+                id="quantity-{{item.id}}"
+                class="quantity-input"
+                value="{{item.quantity}}"
+                min="1"
+                max="99"
+                data-id="{{item.id}}"
+              >
+            </div>
+            <p>Price: {{ item.price | money }}</p>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+
+    {% if cart.total_price > 1 %}
+      <div class="cart-summary">
+        <hr class="cart-divider">
+        <div class="cart-total">
+          <p>
+            Total: <span class="cart-total-price">{{ cart.total_price | money }}</span>
+          </p>
+        </div>
+
+        <div class="cart-actions">
+          <a href="/checkout" id="proceed-checkout" class="button button--primary"> Proceed to Checkout </a>
+          <a href="/cart" id="view-cart" class="button button--secondary"> View Cart </a>
+        </div>
+      </div>
+    {% else %}
+      <div class="empty-cart-message">
+        <p>Your cart is empty</p>
+        <a href="/collections/all" id="shop-now" class="button button--primary"> Shop Now </a>
+      </div>
+    {% endif %}
+  </div>
+</div>

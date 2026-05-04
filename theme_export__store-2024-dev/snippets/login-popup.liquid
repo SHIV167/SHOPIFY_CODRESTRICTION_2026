@@ -1,0 +1,49 @@
+{%- comment -%}
+  Add this code to your theme.liquid file, just before the closing </body> tag
+{%- endcomment -%}
+
+<div id="login-popup" class="login-popup">
+  <div class="login-popup-content">
+    <span class="close">&times;</span>
+    <h2>Login</h2>
+    {% form 'customer_login' %}
+      {{ form.errors | default_errors }}
+      <div class="field">
+        <input type="email" name="customer[email]" placeholder="Email" required>
+      </div>
+      <div class="field">
+        <input type="password" name="customer[password]" placeholder="Password" required>
+      </div>
+      <div class="action">
+        <input type="submit" value="Sign In">
+      </div>
+    {% endform %}
+    <p>Don't have an account? <a href="#" id="show-signup">Sign up</a></p>
+  </div>
+</div>
+
+<div id="signup-popup" class="login-popup">
+  <div class="login-popup-content">
+    <span class="close">&times;</span>
+    <h2>Sign Up</h2>
+    {% form 'create_customer' %}
+      {{ form.errors | default_errors }}
+      <div class="field">
+        <input type="text" name="customer[first_name]" placeholder="First Name" required>
+      </div>
+      <div class="field">
+        <input type="text" name="customer[last_name]" placeholder="Last Name" required>
+      </div>
+      <div class="field">
+        <input type="email" name="customer[email]" placeholder="Email" required>
+      </div>
+      <div class="field">
+        <input type="password" name="customer[password]" placeholder="Password" required>
+      </div>
+      <div class="action">
+        <input type="submit" value="Create Account">
+      </div>
+    {% endform %}
+    <p>Already have an account? <a href="#" id="show-login">Login</a></p>
+  </div>
+</div>

@@ -1,0 +1,99 @@
+{% comment %}
+  Product Variant Selector that triggers image updates
+  - Emits variant:changed event when variant changes
+  - Manages URL history
+{% endcomment %}
+
+<variant-selector
+  data-section-id="{{ section.id }}"
+  data-product="{{ product | json | escape }}"
+  class="product-variant-selector"
+>
+  {%- for option in product.options_with_values -%}
+    <fieldset class="js-product-form__input">
+      <legend class="form__label">{{ option.name }}</legend>
+      {%- for value in option.values -%}
+        <input
+          type="radio"
+          id="{{ section.id }}-{{ option.position }}-{{ forloop.index0 }}"
+          name="{{ option.name }}"
+          value="{{ value | escape }}"
+          form="{{ product_form_id }}"
+          {% if option.selected_value == value %}
+            checked
+          {% endif %}
+        >
+        <label for="{{ section.id }}-{{ option.position }}-{{ forloop.index0 }}">
+          {{ value }}
+        </label>
+      {%- endfor -%}
+    </fieldset>
+  {%- endfor -%}
+</variant-selector>
+
+<script>
+  class VariantSelector extends HTMLElement {
+    constructor() {
+      super();
+      this.product = JSON.parse(this.dataset.product);
+      this.sectionId = this.dataset.sectionId;
+      this.setupEventListeners();
+    }
+
+    setupEventListeners() {
+      this.querySelectorAll('.js-product-form__input input[type="radio"]').forEach(
+        (radio) => radio.addEventListener('change', this.onOptionChange.bind(this))
+      );
+    }
+
+    onOptionChange() {
+      const selectedOptions = this.currentSelectedOptions();
+      const variant = this.findVariant(selectedOptions);
+
+      if (!variant) return;
+
+      // Update URL
+      this.updateURL(variant);
+
+      // Emit variant changed event
+      this.dispatchEvent(
+        new CustomEvent('variant:changed', {
+          detail: { variant: variant },
+          bubbles: true
+        })
+      );
+    }
+
+    currentSelectedOptions() {
+      const selections = {};
+      this.querySelectorAll('.js-product-form__input').forEach((fieldset) => {
+        const optionName = fieldset.querySelector('legend').textContent;
+        const selectedInput = fieldset.querySelector('input:checked');
+        selections[optionName] = selectedInput ? selectedInput.value : null;
+      });
+      return selections;
+    }
+
+    findVariant(selectedOptions) {
+      return this.product.variants.find((variant) => {
+        return Object.entries(selectedOptions).every(([option, value]) => {
+          return variant[`option${this.getOptionPosition(option)}`] === value;
+        });
+      });
+    }
+
+    getOptionPosition(optionName) {
+      return this.product.options.findIndex((option) => option === optionName) + 1;
+    }
+
+    updateURL(variant) {
+      if (!history.replaceState || !variant) return;
+
+      const newUrl = new URL(window.location.href);
+      newUrl.searchParams.set('variant', variant.id);
+      window.history.replaceState({ path: newUrl.pathname + newUrl.search }, '', newUrl.pathname + newUrl.search);
+    }
+  }
+
+  customElements.define('variant-selector', VariantSelector);
+</script>

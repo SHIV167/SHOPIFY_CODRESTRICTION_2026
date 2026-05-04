@@ -1,0 +1,333 @@
+<!-- Dynamic Footer Section -->
+<footer class="footer">
+  <div class="footer__content-top">
+    <div class="footer__blocks-wrapper">
+      <!-- Footer Block: Logo and Description -->
+      <div class="footer-block block-width-30">
+        <div class="footer-block__details-content">
+          <img src="{{ section.settings.logo | img_url: '200x' }}" alt="{{ section.settings.store_title }}">
+          <h3 class="store-subtitle">{{ section.settings.store_title }}</h3>
+          <p class="store-desc">{{ section.settings.store_description }}</p>
+        </div>
+      </div>
+
+      <!-- Footer Block: Contact Information -->
+      <div class="footer-block block-width-30">
+        <div class="contact-info">
+          <h3 class="title">{{ section.settings.contact_title }}</h3>
+          <div class="contact-style2">
+            <ul>
+              <li>
+                <span class="contact-icon">
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16.88 3.549a5.5 5.5 0 00-9.76 0M2.879 9.879a9.5 9.5 0 0118.242 0m-2.121 2.121a13.5 13.5 0 01-14.849 0m15.849 0A17.5 17.5 0 015 18.175m13.56-3.016a21.5 21.5 0 01-13.56 0"></path>
+                  </svg>
+                </span>
+                <span class="content">{{ section.settings.contact_phone }}</span>
+              </li>
+              <li>
+                <span class="contact-icon">
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.75 7.25a2 2 0 011.984-2h14.532a2 2 0 012 2v9.5a2 2 0 01-2 2H4.734a2 2 0 01-1.984-2v-9.5z"></path>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8l8 5.5L20 8"></path>
+                  </svg>
+                </span>
+                <span class="content">{{ section.settings.contact_email }}</span>
+              </li>
+              <li>
+                <span class="contact-icon">
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 7a1 1 0 011 1v3h4a1 1 0 110 2h-4v3a1 1 0 11-2 0v-3H7a1 1 0 110-2h4V8a1 1 0 011-1z"></path>
+                  </svg>
+                </span>
+                <span class="content">{{ section.settings.contact_address }}</span>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <!-- Footer Block: Social Media Links -->
+      <div class="footer-block block-width-27">
+        <div class="footer-social">
+          <h3 class="title">{{ section.settings.social_title }}</h3>
+          <ul>
+            {% for social in section.blocks %}
+              <li class="list-social__item {{ social.settings.social_type }}">
+                <a href="{{ social.settings.social_link }}" target="_blank">
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                  </svg>
+                </a>
+              </li>
+            {% endfor %}
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<!-- Footer Schema -->
+{% schema %}
+{
+  "name": "Footer Section",
+  "settings": [
+    {
+      "type": "image_picker",
+      "id": "logo",
+      "label": "Store Logo"
+    },
+    {
+      "type": "text",
+      "id": "store_title",
+      "label": "Store Title",
+      "default": "Your Store"
+    },
+    {
+      "type": "textarea",
+      "id": "store_description",
+      "label": "Store Description",
+      "default": "This is a description of your store."
+    },
+    {
+      "type": "text",
+      "id": "contact_title",
+      "label": "Contact Section Title",
+      "default": "Get in Touch"
+    },
+    {
+      "type": "text",
+      "id": "contact_phone",
+      "label": "Phone Number",
+      "default": "(555) 555-5555"
+    },
+    {
+      "type": "text",
+      "id": "contact_email",
+      "label": "Email Address",
+      "default": "info@example.com"
+    },
+    {
+      "type": "text",
+      "id": "contact_address",
+      "label": "Physical Address",
+      "default": "123 Main St, City, Country"
+    },
+    {
+      "type": "text",
+      "id": "social_title",
+      "label": "Social Media Section Title",
+      "default": "Follow Us"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "social_link",
+      "name": "Social Media Link",
+      "settings": [
+        {
+          "type": "select",
+          "id": "social_type",
+          "label": "Social Media Platform",
+          "options": [
+            { "value": "facebook", "label": "Facebook" },
+            { "value": "twitter", "label": "Twitter" },
+            { "value": "instagram", "label": "Instagram" },
+            { "value": "youtube", "label": "YouTube" },
+            { "value": "pinterest", "label": "Pinterest" }
+          ]
+        },
+        {
+          "type": "url",
+          "id": "social_link",
+          "label": "Social Media URL"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Footer"
+    }
+  ]
+}
+{% endschema %}
+
+<!-- CSS for Footer -->
+<style>
+  /* General Footer Styling */
+  footer.footer {
+    background-color: #f7f7f7;
+    padding: 40px 0;
+    color: #333;
+    font-family: 'Helvetica', sans-serif;
+  }
+
+  .footer__content-top {
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+
+  .footer__blocks-wrapper {
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 20px;
+  }
+
+  /* Footer Block Styling */
+  .footer-block {
+    flex: 1;
+    padding: 20px;
+  }
+
+  .block-width-30 {
+    width: 30%;
+  }
+
+  .block-width-27 {
+    width: 27%;
+  }
+
+  /* Footer Logo and Subtitle */
+  .footer-block__details-content img {
+    max-width: 100%;
+    height: auto;
+  }
+
+  .store-subtitle {
+    font-size: 18px;
+    font-weight: bold;
+    margin-top: 10px;
+  }
+
+  .store-desc {
+    font-size: 14px;
+    margin-top: 10px;
+    line-height: 1.6;
+  }
+
+  /* Social Icons Styling */
+  .footer-social ul {
+    padding: 0;
+    margin: 10px 0;
+    list-style: none;
+    display: flex;
+    gap: 15px;
+  }
+
+  .footer-social li {
+    display: inline-block;
+  }
+
+  .footer-social a {
+    display: inline-block;
+    width: 40px;
+    height: 40px;
+    background-color: #fff;
+    border-radius: 50%;
+    text-align: center;
+    line-height: 40px;
+    transition: background-color 0.3s;
+  }
+
+  .footer-social a:hover {
+    background-color: #ddd;
+  }
+
+  /* Social Icons Colors */
+  .list-social__item.facebook a {
+    background-color: #3b5998;
+  }
+
+  .list-social__item.twitter a {
+    background-color: #1da1f2;
+  }
+
+  .list-social__item.pinterest a {
+    background-color: #bd081c;
+  }
+
+  .list-social__item.instagram a {
+    background-color: #e1306c;
+  }
+
+  .list-social__item.youtube a {
+    background-color: #ff0000;
+  }
+
+  /* Contact Information */
+  .contact-info {
+    margin-top: 20px;
+  }
+
+  .contact-info .contact-style2 ul {
+    list-style: none;
+    padding: 0;
+  }
+
+  .contact-info .contact-style2 li {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+  }
+
+  .contact-icon {
+    margin-right: 10px;
+  }
+
+  .contact-icon svg {
+    width: 24px;
+    height: 24px;
+    fill: #333;
+  }
+
+  .contact-info .content {
+    font-size: 14px;
+    line-height: 1.6;
+  }
+
+  .contact-info .title {
+    font-weight: bold;
+  }
+
+  /* Responsive Design */
+  @media (max-width: 768px) {
+    .footer__blocks-wrapper {
+      flex-direction: column;
+    }
+
+    .block-width-30, .block-width-27 {
+      width: 100%;
+    }
+
+    .footer-block {
+      padding: 10px;
+    }
+
+    .store-subtitle {
+      font-size: 16px;
+    }
+
+    .store-desc {
+      font-size: 13px;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .footer-social ul {
+      gap: 10px;
+    }
+
+    .footer-social a {
+      width: 35px;
+      height: 35px;
+      line-height: 35px;
+    }
+
+    .contact-info .content {
+      font-size: 13px;
+    }
+  }
+</style>

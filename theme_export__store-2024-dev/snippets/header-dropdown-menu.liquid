@@ -1,0 +1,162 @@
+{% comment %}
+  Renders a complete header dropdown menu with hover effects and Buy Now button at the bottom of the submenu.
+
+  Usage:
+  {% render 'header-dropdown-menu-complete' %}
+{% endcomment %}
+
+<style>
+  .header__inline-menu {
+    font-family: Arial, sans-serif;
+  }
+  .header__inline-menu ul {
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+  }
+  .header__inline-menu > ul {
+    display: flex;
+  }
+  .header__menu-item {
+    display: block;
+    padding: 10px 15px;
+    color: #333;
+    text-decoration: none;
+    transition: background-color 0.3s;
+  }
+  .header__menu-item:hover, .header__menu-item:focus {
+    background-color: #eaf2e7;
+  }
+  .header__submenu {
+    display: none;
+    position: absolute;
+    background-color: #fff;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    z-index: 1000;
+    padding-bottom: 15px; /* Add padding to the bottom to separate the button */
+  }
+  .header__menu-item-wrapper {
+    position: relative;
+  }
+  .header__menu-item-wrapper:hover > .header__submenu,
+  .header__menu-item-wrapper:focus-within > .header__submenu {
+    display: block;
+  }
+  .header__submenu .header__menu-item {
+    white-space: nowrap;
+  }
+  .header__active-menu-item {
+    font-weight: bold;
+  }
+
+  /* Buy Now Button Design */
+  .buy-now-button {
+    background-color: #28a745; /* Green background */
+    color: white; /* White text */
+    border: none;
+    padding: 4px 3px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 14px;
+    margin: 10px 10px auto; /* Center the button and give it some margin */
+    cursor: pointer;
+    border-radius: 4px;
+    transition: background-color 0.3s ease; /* Smooth hover transition */
+    width: 80%; /* Adjust the width to make it fit nicely */
+  }
+  .buy-now-button:hover {
+    background-color: #218838; /* Darker green on hover */
+  }
+  .buy-now-button:active {
+    background-color: #1e7e34; /* Even darker green on active click */
+  }
+  .buy-now-button:focus {
+    outline: 2px solid #218838; /* Focus ring for accessibility */
+  }
+</style>
+
+<nav class="header__inline-menu">
+  <ul class="list-menu list-menu--inline" role="list">
+    {%- for link in section.settings.menu.links -%}
+      <li class="header__menu-item-wrapper">
+        <a
+          href="{{ link.url }}"
+          id="HeaderMenu-{{ link.handle }}"
+          class="header__menu-item list-menu__item link focus-inset{% if link.child_active %} header__menu-item--active{% endif %}"
+          {% if link.current %}
+            aria-current="page"
+          {% endif %}
+        >
+          <span>
+            {{ link.title | escape }}
+            {%- if link.links != blank -%}
+            {%- endif -%}
+          </span>
+        </a>
+        {%- if link.links != blank -%}
+          <ul class="header__submenu list-menu list-menu--disclosure gradient motion-reduce" role="list">
+            {%- for childlink in link.links -%}
+              <li class="header__menu-item-wrapper">
+                <a
+                  id="HeaderMenu-{{ link.handle }}-{{ childlink.handle }}"
+                  href="{{ childlink.url }}"
+                  class="header__menu-item list-menu__item link focus-inset caption-large{% if childlink.current %} list-menu__item--active{% endif %}"
+                  {% if childlink.current %}
+                    aria-current="page"
+                  {% endif %}
+                >
+                  {{ childlink.title | escape }}
+                  {%- if childlink.links != blank -%}
+                  {%- endif %}
+                </a>
+                {%- if childlink.links != blank -%}
+                  <ul class="header__submenu list-menu motion-reduce" role="list">
+                    {%- for grandchildlink in childlink.links -%}
+                      <li>
+                        <a
+                          id="HeaderMenu-{{ link.handle }}-{{ childlink.handle }}-{{ grandchildlink.handle }}"
+                          href="{{ grandchildlink.url }}"
+                          class="header__menu-item list-menu__item link focus-inset caption-large{% if grandchildlink.current %} list-menu__item--active{% endif %}"
+                          {% if grandchildlink.current %}
+                            aria-current="page"
+                          {% endif %}
+                        >
+                          {{ grandchildlink.title | escape }}
+                        </a>
+                      </li>
+                    {%- endfor -%}
+                  </ul>
+                {%- endif -%}
+              </li>
+            {%- endfor -%}
+            <!-- Buy Now Button at the bottom of submenu -->
+            <li>
+              <a href="{{ link.url }}" class="buy-now-button">Buy Now</a>
+            </li>
+          </ul>
+        {%- endif -%}
+      </li>
+    {%- endfor -%}
+  </ul>
+</nav>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    var menuItems = document.querySelectorAll('.header__menu-item-wrapper');
+    menuItems.forEach(function(item) {
+      item.addEventListener('mouseenter', function() {
+        var submenu = this.querySelector('.header__submenu');
+        if (submenu) {
+          submenu.style.display = 'block';
+        }
+      });
+      item.addEventListener('mouseleave', function() {
+        var submenu = this.querySelector('.header__submenu');
+        if (submenu) {
+          submenu.style.display = 'none';
+        }
+      });
+    });
+  });
+</script>
