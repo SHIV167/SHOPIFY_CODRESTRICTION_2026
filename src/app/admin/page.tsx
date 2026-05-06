@@ -97,7 +97,13 @@ export default function AdminPage() {
 
       {unauthorized ? (
         <div style={{ marginTop: 12, padding: 12, border: '1px solid #f59e0b', background: '#fffbeb' }}>
-          Unauthorized. Open this page from Shopify Admin (embedded) so the app can request a session token.
+          <div>Unauthorized. Open this page from Shopify Admin (embedded) so the app can request a session token.</div>
+          <a
+            href={`/api/shopify/auth${window.location.search ? '?' + window.location.search.slice(1) : ''}`}
+            style={{ display: 'inline-block', marginTop: 8, padding: '8px 12px', borderRadius: 6, border: '1px solid #111', background: '#111', color: '#fff', textDecoration: 'none' }}
+          >
+            Re-authenticate
+          </a>
         </div>
       ) : null}
 

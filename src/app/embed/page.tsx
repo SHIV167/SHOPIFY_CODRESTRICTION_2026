@@ -5,6 +5,8 @@ import { useEffect, useMemo, useState } from 'react';
 export default function EmbeddedApp() {
   const [shop, setShop] = useState<string | null>(null);
   const [host, setHost] = useState<string | null>(null);
+  const [checkingAuth, setCheckingAuth] = useState(true);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   const authUrl = useMemo(() => {
     if (!shop) return null;
@@ -49,15 +51,28 @@ export default function EmbeddedApp() {
     }
   }, []);
 
-  const adminUrl = useMemo(() => {
-    const p = new URLSearchParams();
-    if (shop) p.set('shop', shop);
-    if (host) p.set('host', host);
-    const qs = p.toString();
-    return qs ? `/admin?${qs}` : '/admin';
-  }, [shop, host]);
+  useEffect(() => {
+    if (!shop) {
+      setCheckingAuth(false);
+      return;
+    }
+
+    fetch(`/api/shopify/session?shop=${encodeURIComponent(shop)}`, { credentials: 'same-origin' })
+      .then((res) => res.json())
+      .then((data: { authenticated?: boolean }) => {
+        setIsAuthenticated(!!data.authenticated);
+      })
+      .catch(() => {
+        setIsAuthenticated(false);
+      })
+      .finally(() => {
+        setCheckingAuth(false);
+      });
+  }, [shop]);
 
   useEffect(() => {
+    if (checkingAuth) return;
+    if (isAuthenticated) return;
     if (!authUrl) return;
 
     const isEmbedded = window.top !== window.self;
@@ -68,15 +83,29 @@ export default function EmbeddedApp() {
     } catch {
       window.location.href = authUrl;
     }
-  }, [authUrl]);
+  }, [authUrl, checkingAuth, isAuthenticated]);
+
+  const adminUrl = useMemo(() => {
+    const p = new URLSearchParams();
+    if (shop) p.set('shop', shop);
+    if (host) p.set('host', host);
+    const qs = p.toString();
+    return qs ? `/admin?${qs}` : '/admin';
+  }, [shop, host]);
+
+  if (checkingAuth) {
+    return (
+      <div style={{ minHeight: '100vh', background: '#f9fafb', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24, fontFamily: 'system-ui, sans-serif' }}>
+        <div style={{ color: '#4b5563' }}>Loading…</div>
+      </div>
+    );
+  }
 
   return (
     <div style={{ minHeight: '100vh', background: '#f9fafb', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24, fontFamily: 'system-ui, sans-serif' }}>
       <div style={{ maxWidth: 680, width: '100%', background: '#fff', border: '1px solid #e5e7eb', borderRadius: 12, padding: 20 }}>
-        <h1 style={{ fontSize: 20, fontWeight: 650, margin: 0 }}>Embedded App</h1>
-        <p style={{ marginTop: 8, color: '#4b5563' }}>
-          Open this inside Shopify Admin (embedded). The app will request a session token and authorize API calls.
-        </p>
+        <h1 style={{ fontSize: 20, fontWeight: 650, margin: 0 }}>COD Restrictions</h1>
+        <p style={{ marginTop: 8, color: '#4b5563' }}>Open inside Shopify Admin to manage COD settings.</p>
 
         <div style={{ marginTop: 16, display: 'flex', gap: 12, flexWrap: 'wrap' }}>
           <a
@@ -85,12 +114,14 @@ export default function EmbeddedApp() {
           >
             Open Admin
           </a>
-          <a
-            href={authUrl || '/install'}
-            style={{ display: 'inline-flex', alignItems: 'center', padding: '10px 14px', borderRadius: 8, border: '1px solid #111', background: '#fff', color: '#111', textDecoration: 'none' }}
-          >
-            {shop ? 'Continue OAuth' : 'Install'}
-          </a>
+          {!isAuthenticated && (
+            <a
+              href={authUrl || '/install'}
+              style={{ display: 'inline-flex', alignItems: 'center', padding: '10px 14px', borderRadius: 8, border: '1px solid #111', background: '#fff', color: '#111', textDecoration: 'none' }}
+            >
+              {shop ? 'Continue OAuth' : 'Install'}
+            </a>
+          )}
         </div>
       </div>
     </div>
