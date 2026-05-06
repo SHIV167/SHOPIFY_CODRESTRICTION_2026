@@ -19,7 +19,23 @@ export async function GET(req: NextRequest) {
     include: { codSettings: true },
   });
 
-  if (!record?.codSettings) return new NextResponse('Not found', { status: 404 });
+  if (!record) return new NextResponse('Not found', { status: 404 });
+
+  if (!record.codSettings) {
+    const created = await prisma.codSettings.create({
+      data: {
+        shopId: record.id,
+        enabled: false,
+        blockedProductSkus: [],
+        blockedProductIds: [],
+        blockedCustomerEmails: [],
+        blockedCustomerIds: [],
+        allowedPincodes: [],
+        blockedPincodes: [],
+      },
+    });
+    return NextResponse.json(created);
+  }
 
   return NextResponse.json(record.codSettings);
 }
@@ -35,10 +51,27 @@ export async function PUT(req: NextRequest) {
     include: { codSettings: true },
   });
 
-  if (!record?.codSettings?.id) return new NextResponse('Not found', { status: 404 });
+  if (!record) return new NextResponse('Not found', { status: 404 });
+
+  let settingsId = record.codSettings?.id;
+  if (!settingsId) {
+    const created = await prisma.codSettings.create({
+      data: {
+        shopId: record.id,
+        enabled: false,
+        blockedProductSkus: [],
+        blockedProductIds: [],
+        blockedCustomerEmails: [],
+        blockedCustomerIds: [],
+        allowedPincodes: [],
+        blockedPincodes: [],
+      },
+    });
+    settingsId = created.id;
+  }
 
   const updated = await prisma.codSettings.update({
-    where: { id: record.codSettings.id },
+    where: { id: settingsId },
     data: {
       enabled: Boolean(body.enabled),
       blockedProductSkus: Array.isArray(body.blockedProductSkus) ? body.blockedProductSkus : [],
