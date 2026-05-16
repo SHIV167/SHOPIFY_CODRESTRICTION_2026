@@ -1,5 +1,5 @@
-// Unified Schema - Shared by COD Restrictions, Store Locator, and Review apps
-// All three apps use the same PostgreSQL database
+// Unified Schema - Shared by COD Restrictions, Store Locator, Review, and LoginRegister apps
+// All four apps use the same PostgreSQL database
 
 generator client {
   provider = "prisma-client-js"
@@ -11,7 +11,7 @@ datasource db {
 }
 
 // ============================================================================
-// SHARED: Store installations (used by all 3 apps)
+// SHARED: Store installations (used by all apps)
 // ============================================================================
 
 model Shop {
@@ -30,6 +30,7 @@ model Shop {
 
   // Store Locator relations
   locations     StoreLocation[]
+  sliderImages  SliderImage[]
 
   // Review App relations
   reviews       Review[]
@@ -37,8 +38,100 @@ model Shop {
   metrics       ReviewMetrics?
   requests      ReviewRequest[]
 
+  // LoginRegister App relations
+  loginRegisterSettings LoginRegisterSettings?
+  customers     Customer[]
+
   @@index([shopifyDomain])
   @@index([isActive])
+}
+
+// ============================================================================
+// LOGINREGISTER APP MODELS
+// ============================================================================
+
+model LoginRegisterSettings {
+  id                    String   @id @default(cuid())
+  shopId                String   @unique
+  shop                  Shop     @relation(fields: [shopId], references: [id], onDelete: Cascade)
+
+  enableRegistration    Boolean  @default(true)
+  enableSocialLogin     Boolean  @default(false)
+  enablePhoneLogin      Boolean  @default(false)
+  requireEmailVerification Boolean @default(false)
+
+  requirePhone          Boolean  @default(false)
+  requireAddress        Boolean  @default(false)
+  requirePasswordConfirm  Boolean  @default(true)
+  minPasswordLength     Int      @default(6)
+
+  formTheme             String   @default("default")
+  primaryColor          String   @default("#000000")
+  buttonTextColor       String   @default("#ffffff")
+  logoUrl               String?
+
+  loginRedirectUrl      String   @default("/account")
+  registerRedirectUrl   String   @default("/account")
+
+  welcomeEmailSubject   String   @default("Welcome to {shop_name}!")
+  welcomeEmailTemplate  String?  @db.Text
+  verificationEmailSubject String @default("Verify your email address")
+  verificationEmailTemplate  String? @db.Text
+
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+}
+
+model Customer {
+  id            String    @id @default(cuid())
+  shopId        String
+  shop          Shop      @relation(fields: [shopId], references: [id], onDelete: Cascade)
+
+  email         String
+  passwordHash  String?
+  phone         String?
+
+  firstName     String?
+  lastName      String?
+  avatarUrl     String?
+
+  address       String?
+  city          String?
+  state         String?
+  zipCode       String?
+  country       String?
+
+  emailVerified Boolean   @default(false)
+  emailVerifyToken String?
+  emailVerifyExpires DateTime?
+
+  phoneVerified Boolean   @default(false)
+  phoneOtp      String?
+  phoneOtpExpires DateTime?
+
+  isActive      Boolean   @default(true)
+  lastLoginAt   DateTime?
+
+  resetToken    String?
+  resetTokenExpires DateTime?
+
+  provider      String?
+  providerId    String?
+
+  shopifyCustomerId String?
+  shopifyCustomerToken String?
+
+  tags          String[]
+  notes         String?   @db.Text
+
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@unique([shopId, email])
+  @@index([shopId, email])
+  @@index([shopId, phone])
+  @@index([shopId, isActive])
+  @@index([emailVerified])
 }
 
 // ============================================================================
@@ -114,6 +207,25 @@ model StoreLocation {
 
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+
+  @@index([shopId, isActive, sortOrder])
+}
+
+model SliderImage {
+  id              String   @id @default(cuid())
+  shopId          String
+  shop            Shop     @relation(fields: [shopId], references: [id], onDelete: Cascade)
+
+  desktopImageUrl String
+  mobileImageUrl  String
+  altText         String?
+  linkUrl         String?
+
+  isActive        Boolean  @default(true)
+  sortOrder       Int      @default(0)
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
 
   @@index([shopId, isActive, sortOrder])
 }
